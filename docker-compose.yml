@@ -1,0 +1,40 @@
+version: '3'
+services:
+  db:
+    image: postgres:15.3-alpine3.18
+    restart: always
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - '5432:5432'
+    container_name: postgres-db
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+  nestjs:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: todo-app:v1.2.0
+    environment:
+      - DB_TYPE=${DB_TYPE}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASS=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_SYNC=false
+      - JWT_SECRET=${JWT_SECRET}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - APP_EXPIRES=${APP_EXPIRES}
+      - APP_PORT=${APP_PORT}
+    ports:
+      - "3000:3000" # expose ports
+    container_name: a-todo-app
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/node_modules
+volumes:
+  pgdata:
